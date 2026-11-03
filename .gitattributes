@@ -1,0 +1,11 @@
+* text=auto eol=lf
+*.cpp text eol=lf
+*.h text eol=lf
+*.js text eol=lf
+*.json text eol=lf
+*.wxss text eol=lf
+*.wxml text eol=lf
+*.py text eol=lf
+*.md text eol=lf
+*.yml text eol=lf
+.githooks/* text eol=lf

@@ -1,0 +1,62 @@
+<view class="page">
+  <view class="header">
+    <view><text class="eyebrow">LIGHT UP YOUR MOMENT</text><view class="title">给此刻，一点颜色。</view></view>
+    <view class="badge {{connected ? 'online' : ''}}"><text class="dot"></text>{{connected ? '已连接' : '未连接'}}</view>
+  </view>
+
+  <view class="preview">
+    <view class="halo" style="background: {{colorHex}};"></view>
+    <view class="lamp mode-{{light.mode}} {{light.on ? '' : 'lamp-off'}}" style="background: {{colorHex}}; animation-duration: {{light.mode === 3 ? 30 : effectDuration / 1000}}s;"></view>
+    <view class="preview-caption">{{light.on ? modeName : '灯光已关闭'}}</view>
+    <view class="preview-note">灯光预览 · {{light.brightness}}% 亮度</view>
+  </view>
+
+  <view class="card connection-card">
+    <view class="row">
+      <view><view class="card-title">{{connected ? deviceName : '连接你的彩灯'}}</view><view class="muted">{{connected ? '蓝牙直连 · 设置自动保存' : '给开发板通电，打开手机蓝牙'}}</view></view>
+      <button wx:if="{{!connected}}" class="primary small" bindtap="search" loading="{{scanning}}" disabled="{{scanning || connectingId}}">{{scanning ? '搜索中' : '搜索设备'}}</button>
+      <button wx:else class="quiet" bindtap="disconnect">断开</button>
+    </view>
+    <view wx:if="{{!connected && devices.length}}" class="devices">
+      <button wx:for="{{devices}}" wx:key="deviceId" class="device row" data-id="{{item.deviceId}}" bindtap="connect" disabled="{{!!connectingId}}" loading="{{connectingId === item.deviceId}}">
+        <view class="device-name">{{item.name}}<text class="signal">{{item.RSSI}} dBm</text></view><text class="connect-label">连接 ›</text>
+      </button>
+    </view>
+    <view wx:if="{{!connected && !scanning && !devices.length}}" class="hint">靠近开发板后点击搜索，在列表中选择 S3-RGB 设备。</view>
+    <view wx:if="{{errorText}}" class="error"><text>{{errorText}}</text><text class="setting-link" bindtap="openSettings">授权设置</text></view>
+  </view>
+
+  <view class="card {{connected ? '' : 'inactive'}}">
+    <view class="row"><view><view class="card-title">灯光开关</view><view class="muted">{{connected ? syncText : '连接后即可调节'}}</view></view><switch color="#a1e8ce" checked="{{light.on}}" disabled="{{!connected}}" bindchange="toggle" /></view>
+    <view class="divider"></view>
+    <view class="row"><text class="label">亮度</text><text class="value">{{light.brightness}}<text class="unit"> %</text></text></view>
+    <slider class="main-slider" min="0" max="100" value="{{light.brightness}}" data-field="brightness" activeColor="#a1e8ce" backgroundColor="#353843" block-color="#eefcf7" block-size="22" disabled="{{!connected}}" bindchanging="previewSlider" bindchange="commitSlider" />
+    <view class="slider-labels"><text>微光</text><text>明亮</text></view>
+  </view>
+
+  <view class="card {{connected ? '' : 'inactive'}}">
+    <view class="row"><text class="card-title">喜欢的颜色</text><text class="hex">{{colorHex}}</text></view>
+    <view class="palette"><button wx:for="{{palette}}" wx:key="*this" class="swatch {{colorHex === item && light.mode === 0 ? 'selected' : ''}}" style="background: {{item}};" data-color="{{item}}" disabled="{{!connected}}" bindtap="selectColor"></button></view>
+    <view class="rgb-row"><text class="channel red">R</text><slider min="0" max="255" value="{{light.red}}" data-field="red" activeColor="#ff7878" backgroundColor="#353843" block-size="14" disabled="{{!connected}}" bindchanging="previewSlider" bindchange="commitSlider" /><text class="channel-value">{{light.red}}</text></view>
+    <view class="rgb-row"><text class="channel green">G</text><slider min="0" max="255" value="{{light.green}}" data-field="green" activeColor="#a1e8ce" backgroundColor="#353843" block-size="14" disabled="{{!connected}}" bindchanging="previewSlider" bindchange="commitSlider" /><text class="channel-value">{{light.green}}</text></view>
+    <view class="rgb-row"><text class="channel blue">B</text><slider min="0" max="255" value="{{light.blue}}" data-field="blue" activeColor="#94b2ff" backgroundColor="#353843" block-size="14" disabled="{{!connected}}" bindchanging="previewSlider" bindchange="commitSlider" /><text class="channel-value">{{light.blue}}</text></view>
+  </view>
+
+  <view class="card {{connected ? '' : 'inactive'}}">
+    <view class="card-title">换一种氛围</view>
+    <view class="mode-grid"><button wx:for="{{modes}}" wx:key="id" class="mode-button {{light.mode === item.id ? 'active' : ''}}" data-mode="{{item.id}}" disabled="{{!connected}}" bindtap="selectMode"><text class="mode-symbol">{{item.symbol}}</text><view class="mode-title">{{item.name}}</view><view class="mode-note">{{item.note}}</view></button></view>
+    <view wx:if="{{light.mode === 1 || light.mode === 2}}" class="speed-control"><view class="row"><text class="label">变化速度</text><text class="value">{{light.speed}}<text class="unit"> %</text></text></view><slider min="1" max="100" value="{{light.speed}}" data-field="speed" activeColor="#a1e8ce" backgroundColor="#353843" block-size="18" disabled="{{!connected}}" bindchanging="previewSlider" bindchange="commitSlider" /><view class="slider-labels"><text>舒缓</text><text>轻快</text></view></view>
+    <view wx:if="{{light.mode === 3}}" class="hint">红 → 绿 → 蓝，每种颜色保持 10 秒。</view>
+  </view>
+  <view class="footer"><view>短按 BOOT 循环切色 · 与小程序双向同步</view><view>停止调节后自动保存</view></view>
+
+  <view wx:if="{{showPrivacy}}" class="privacy-mask" catchtap="rejectPrivacy">
+    <view class="privacy-card" catchtap="ignorePrivacyTap">
+      <button class="privacy-close" aria-label="关闭提示" bindtap="rejectPrivacy">×</button>
+      <view class="card-title">连接前的小提示</view>
+      <view class="privacy-copy">我们使用蓝牙寻找并控制你的彩灯，不上传设备信息。请阅读并同意<text class="setting-link" bindtap="openPrivacy">{{privacyName}}</text>。</view>
+      <button id="agree-privacy" class="primary" open-type="agreePrivacyAuthorization" bindtap="preparePrivacyAgree" bindagreeprivacyauthorization="agreePrivacy" loading="{{privacyAgreePending}}">{{privacyAgreePending ? '正在确认…' : '同意并继续'}}</button>
+      <button class="privacy-cancel" bindtap="rejectPrivacy">暂不连接</button>
+    </view>
+  </view>
+</view>

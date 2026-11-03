@@ -1,0 +1,12 @@
+{
+  "name": "esp32-s3-ble-rgb",
+  "version": "0.1.0",
+  "private": true,
+  "description": "ESP32-S3 RGB light with WeChat BLE control and physical button synchronization",
+  "license": "MIT",
+  "engines": { "node": ">=24" },
+  "scripts": {
+    "test": "node --test miniprogram/tests/*.test.js",
+    "check:public": "node tools/check-public-files.js"
+  }
+}

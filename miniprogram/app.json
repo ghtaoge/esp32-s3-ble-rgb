@@ -1,0 +1,14 @@
+{
+  "pages": ["pages/index/index"],
+  "window": {
+    "navigationBarTitleText": "拾光 · 彩灯",
+    "navigationBarBackgroundColor": "#101219",
+    "navigationBarTextStyle": "white",
+    "backgroundColor": "#101219"
+  },
+  "permission": {
+    "scope.bluetooth": { "desc": "连接你的 ESP32 彩灯，调节灯光颜色与亮度" }
+  },
+  "style": "v2",
+  "sitemapLocation": "sitemap.json"
+}
